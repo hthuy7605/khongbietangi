@@ -33,7 +33,7 @@ export default function Home() {
 
     // Update all categories when dishes change (only on initial load)
     useEffect(() => {
-        if (dishes.length > 0 && allCategories.length === 0) {
+        if (Array.isArray(dishes) && dishes.length > 0 && allCategories.length === 0) {
             const uniqueCategories = [...new Set(dishes.map(d => d.category).filter(Boolean))];
             setAllCategories(uniqueCategories);
         }
@@ -41,6 +41,7 @@ export default function Home() {
 
     // Available dishes = all dishes minus rejected ones
     const availableDishes = useMemo(() => {
+        if (!Array.isArray(dishes)) return [];
         return dishes.filter(d => !rejectedIds.includes(d.id));
     }, [dishes, rejectedIds]);
 

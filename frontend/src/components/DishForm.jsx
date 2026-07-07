@@ -44,8 +44,6 @@ export default function DishForm({ visible, onHide, onSubmit, initialData }) {
 
     const validate = () => {
         const newErrors = {};
-        if (!district.trim()) newErrors.district = 'Vui lòng nhập quận';
-        if (!address.trim()) newErrors.address = 'Vui lòng nhập địa chỉ';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -101,22 +99,20 @@ export default function DishForm({ visible, onHide, onSubmit, initialData }) {
                 {/* District */}
                 <div className="flex flex-col gap-1">
                     <label htmlFor="district" className="text-sm font-medium text-slate-700">
-                        Quận <span className="text-red-500">*</span>
+                        Quận
                     </label>
                     <InputText
                         id="district"
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
                         placeholder="VD: District 1"
-                        className={errors.district ? 'p-invalid' : ''}
                     />
-                    {errors.district && <small className="text-red-500">{errors.district}</small>}
                 </div>
 
                 {/* Address */}
                 <div className="flex flex-col gap-1">
                     <label htmlFor="address" className="text-sm font-medium text-slate-700">
-                        Địa chỉ <span className="text-red-500">*</span>
+                        Địa chỉ
                     </label>
                     <InputTextarea
                         id="address"
@@ -124,9 +120,7 @@ export default function DishForm({ visible, onHide, onSubmit, initialData }) {
                         onChange={(e) => setAddress(e.target.value)}
                         placeholder="VD: 123 Nguyen Hue"
                         rows={3}
-                        className={errors.address ? 'p-invalid' : ''}
                     />
-                    {errors.address && <small className="text-red-500">{errors.address}</small>}
                 </div>
 
                 {/* Category */}

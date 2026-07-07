@@ -34,34 +34,27 @@ Add only the backend service to your existing docker-compose.yml:
 Add this configuration to your Caddyfile (adjust domain/subdomain as needed):
 
 ```caddyfile
-# Khongbietangi - Frontend (served by Caddy)
-your-domain.com {
-    root * /srv/khongbietangi/dist
-    file_server
-    try_files {path} /index.html
-
+# --- khongbietangi ---
+khongbietangi.com, www.khongbietangi.com {
     # Proxy API requests to backend
     handle /api/* {
         reverse_proxy khongbietangi_backend:5000
     }
-
-    # Gzip compression
-    encode gzip
-}
-
-# Or use a subdomain
-khongbietangi.your-domain.com {
-    root * /srv/khongbietangi/dist
-    file_server
-    try_files {path} /index.html
-
-    handle /api/* {
-        reverse_proxy khongbietangi_backend:5000
+    handle {
+        root * /srv/khongbietangi
+        file_server
+        try_files {path} /index.html
     }
 
+    #Gzip compression
     encode gzip
 }
 ```
+
+**Important:**
+1. The `reverse_proxy` with `@api` matcher must come BEFORE `file_server`
+2. The root path must be `/srv/khongbietangi/dist` (not `/srv/khongbietangi`)
+3. Using `@api` matcher ensures all HTTP methods (POST, PUT, DELETE) are proxied correctly
 
 ## Step 3: Update Caddy Volume Mapping
 
