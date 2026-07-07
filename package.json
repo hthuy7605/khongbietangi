@@ -1,0 +1,13 @@
+{
+  "name": "khongbietangi",
+  "version": "1.0.0",
+  "description": "Không biết ăn gì - A food randomizer app",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
