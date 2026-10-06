@@ -1,19 +1,19 @@
-FROM node:18-alpine
-
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
-
-# Install pnpm and dependencies
 RUN npm install -g pnpm
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
 RUN pnpm install --frozen-lockfile
+COPY tsconfig.json ./
+COPY src ./src
+RUN pnpm build && pnpm prune --prod
 
-# Copy source code
-COPY . .
-
-# Expose port
+FROM node:22-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY package.json ./
+COPY migrations ./migrations
 EXPOSE 5000
-
-# Start the application
-CMD ["pnpm", "start"]
+USER node
+CMD ["node", "dist/server.js"]

@@ -31,40 +31,7 @@ sudo usermod -aG docker $USER
 
 ## Step 2: Prepare Database
 
-Make sure your PostgreSQL database is accessible from your VPS. You need to:
-
-1. Ensure PostgreSQL allows remote connections
-2. Create the database and users table if not exists
-
-```sql
--- Connect to your PostgreSQL
-CREATE DATABASE khongbietangi;
-
--- Connect to the database
-\c khongbietangi
-
--- Create users table
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Insert admin user
-INSERT INTO users (username, password) 
-VALUES ('', '')
-ON CONFLICT (username) DO NOTHING;
-
--- Create monAn table
-CREATE TABLE IF NOT EXISTS monAn (
-    id SERIAL PRIMARY KEY,
-    district VARCHAR(255) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    category VARCHAR(100),
-    priority INTEGER DEFAULT 0
-);
-```
+Make sure your PostgreSQL database is accessible from your VPS and PostgreSQL allows remote connections. Schema is created by migrations (see Step 5), do not create tables by hand.
 
 ## Step 3: Upload Files to VPS
 
@@ -110,15 +77,21 @@ DB_HOST=your_postgresql_host_or_ip
 DB_PORT=5432
 DB_NAME=khongbietangi
 PORT=5000
+JWT_SECRET=<openssl rand -hex 32>
 ```
 
-## Step 5: Build and Start Containers
+## Step 5: Build, Migrate and Start Containers
 
 ```bash
 cd /var/www/khongbietangi
 
-# Build and start all services
-docker-compose up -d --build
+docker-compose build
+docker-compose run --rm --no-deps khongbietangi_backend node dist/migrate.js up
+# Admin: không tham số = chuyển tài khoản cũ (mật khẩu được hash); hoặc truyền <username> <password>
+docker-compose run --rm --no-deps khongbietangi_backend node dist/scripts/createAdmin.js
+
+# Start services
+docker-compose up -d
 
 # Check logs
 docker-compose logs -f

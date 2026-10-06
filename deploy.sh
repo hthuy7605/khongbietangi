@@ -42,7 +42,12 @@ deploy_be() {
     
     echo "[+] Khởi động lại Docker Container Backend..."
     cd $SERVER_DIR
-    docker compose up -d --build $BACKEND_CONTAINER_NAME
+    docker compose build $BACKEND_CONTAINER_NAME
+
+    echo "[+] Chạy migration database..."
+    docker compose run --rm --no-deps $BACKEND_CONTAINER_NAME node dist/migrate.js up
+
+    docker compose up -d $BACKEND_CONTAINER_NAME
 }
 
 # Hàm reload Caddy

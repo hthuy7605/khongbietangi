@@ -26,3 +26,5 @@ plans
 *.sw?
 
 *.env*
+# Playwright MCP
+.playwright-mcp/

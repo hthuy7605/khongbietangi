@@ -80,37 +80,19 @@ Update the caddy service in your docker-compose.yml to include the khongbietangi
 
 ## Step 4: Setup Database
 
-Create the database and tables in your existing PostgreSQL:
+Tạo database `khongbietangi` rỗng (hoặc dùng DB cũ đã có bảng `monAn` và `users`), rồi chạy migration. Migration tạo schema mới, đổi tên bảng cũ thành `monan_legacy` / `users_legacy` và chuyển mỗi dòng `monAn` cũ thành một quán.
 
-```sql
--- Connect to PostgreSQL
-CREATE DATABASE khongbietangi;
+```bash
+cd /opt/server
+docker compose run --rm --no-deps khongbietangi_backend node dist/migrate.js up
 
--- Connect to the database
-\c khongbietangi
-
--- Create users table
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Insert admin user
-INSERT INTO users (username, password) 
-VALUES ('', '')
-ON CONFLICT (username) DO NOTHING;
-
--- Create monAn table
-CREATE TABLE IF NOT EXISTS monAn (
-    id SERIAL PRIMARY KEY,
-    district VARCHAR(255) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    category VARCHAR(100),
-    priority INTEGER DEFAULT 0
-);
+# Tạo tài khoản admin: không tham số = chuyển tài khoản cũ từ users_legacy (mật khẩu được hash)
+docker compose run --rm --no-deps khongbietangi_backend node dist/scripts/createAdmin.js
+# Hoặc đặt tài khoản mới:
+docker compose run --rm --no-deps khongbietangi_backend node dist/scripts/createAdmin.js <username> <password>
 ```
+
+Với DB hoàn toàn mới (chưa có bảng cũ), migration sẽ lỗi ở bước đổi tên bảng; tạo hai bảng cũ rỗng trước nếu cần.
 
 ## Step 5: Update Backend .env.production
 
@@ -123,7 +105,13 @@ DB_HOST=
 DB_PORT=
 DB_NAME=
 PORT=
+# Bắt buộc, chuỗi ngẫu nhiên >= 16 ký tự (vd: openssl rand -hex 32)
+JWT_SECRET=
+# Tùy chọn: bật Cloudflare Turnstile cho form đề xuất (khóa riêng)
+TURNSTILE_SECRET=
 ```
+
+Nếu dùng Turnstile, đặt thêm `VITE_TURNSTILE_SITE_KEY=<site key>` trong `frontend/.env.production` trước khi `pnpm run build`.
 
 ## Step 6: Initial Deploy
 
