@@ -1,6 +1,7 @@
 import { pool, type Db } from '../db';
 import { notFound } from '../errors';
 import type { DishInput, PlaceInput } from '../schemas';
+import { getSetting } from './settings';
 
 const DISH_COLS = `d.id, d.name, d.emoji, d.description, d.meals, d.weight, d.is_active AS "isActive",
   ARRAY(SELECT group_id FROM dish_groups WHERE dish_id = d.id ORDER BY group_id) AS "groupIds"`;
@@ -11,7 +12,7 @@ const PLACE_COLS = `p.id, p.name, p.district, p.address, p.maps_url AS "mapsUrl"
   p.is_active AS "isActive"`;
 
 export async function publicCatalog() {
-  const [groups, dishes, places] = await Promise.all([
+  const [groups, dishes, places, dishWeightEnabled, placeWeightEnabled] = await Promise.all([
     pool.query('SELECT id, name, emoji FROM groups ORDER BY sort_order, id'),
     pool.query(
       `SELECT ${DISH_COLS},
@@ -20,9 +21,17 @@ export async function publicCatalog() {
        FROM dishes d WHERE d.is_active ORDER BY d.id`,
     ),
     pool.query(`SELECT ${PLACE_COLS} FROM places p WHERE p.is_active ORDER BY p.id`),
+    getSetting('dish_weight_enabled'),
+    getSetting('place_weight_enabled'),
   ]);
   const strip = <T extends { isActive?: boolean }>({ isActive: _isActive, ...rest }: T) => rest;
-  return { groups: groups.rows, dishes: dishes.rows.map(strip), places: places.rows.map(strip) };
+  return {
+    groups: groups.rows,
+    dishes: dishes.rows.map(strip),
+    places: places.rows.map(strip),
+    dishWeightEnabled,
+    placeWeightEnabled,
+  };
 }
 
 export const listGroups = (db: Db = pool) =>

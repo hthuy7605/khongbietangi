@@ -62,7 +62,8 @@ export default function HomePage() {
 
   const spin = useCallback(
     async (pool: Dish[]) => {
-      const target = pickWeighted(pool);
+      const weightedPool = catalog?.dishWeightEnabled ? pool : pool.map((d) => ({ ...d, weight: 1 }));
+      const target = pickWeighted(weightedPool);
       if (!target) return;
       const id = ++spinId.current;
       setPickedPlace(null);
@@ -73,7 +74,7 @@ export default function HomePage() {
       setAnnounce(`Hôm nay ăn ${target.name}`);
       void celebrate();
     },
-    [slot],
+    [slot, catalog?.dishWeightEnabled],
   );
 
   const onChangeFilters = (f: Filters) => {
@@ -104,7 +105,8 @@ export default function HomePage() {
   }
 
   function spinPlace() {
-    const view = pickWeighted(placeViews.map((v) => ({ ...v, weight: v.place.weight })));
+    const weighted = placeViews.map((v) => ({ ...v, weight: catalog?.placeWeightEnabled ? v.place.weight : 1 }));
+    const view = pickWeighted(weighted);
     if (view) {
       setPickedPlace(view);
       setAnnounce(`Quán được chọn: ${view.place.name}`);

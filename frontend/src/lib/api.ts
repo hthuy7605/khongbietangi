@@ -48,5 +48,8 @@ export const api = {
     suggestions: (status: SuggestionStatus) => data<Suggestion[]>(http.get('/admin/suggestions', { params: { status } })),
     approve: (id: number, payload?: unknown) => data<{ ok: true }>(http.post(`/admin/suggestions/${id}/approve`, { payload })),
     reject: (id: number, reason: string | null) => data<{ ok: true }>(http.post(`/admin/suggestions/${id}/reject`, { reason })),
+    settings: () => data<{ dishWeightEnabled: boolean; placeWeightEnabled: boolean }>(http.get('/admin/settings')),
+    toggleSetting: (key: 'dish_weight_enabled' | 'place_weight_enabled') =>
+      data<{ ok: boolean; [key: string]: boolean }>(http.post('/admin/settings/toggle', { key })),
   },
 };

@@ -13,6 +13,7 @@ import LoginPage from './LoginPage';
 import OverviewTab from './OverviewTab';
 import PlacesTab from './PlacesTab';
 import ReviewTab from './ReviewTab';
+import SettingsTab from './SettingsTab';
 
 const TABS = [
   { to: '/admin', label: 'Duyệt', end: true },
@@ -20,6 +21,7 @@ const TABS = [
   { to: '/admin/quan', label: 'Quán' },
   { to: '/admin/nhom', label: 'Nhóm' },
   { to: '/admin/tong-quan', label: 'Tổng quan' },
+  { to: '/admin/cai-dat', label: 'Cài đặt' },
 ];
 
 function Shell({ onLogout }: { onLogout: () => void }) {
@@ -69,6 +71,7 @@ function Shell({ onLogout }: { onLogout: () => void }) {
           <Route path="quan" element={<PlacesTab />} />
           <Route path="nhom" element={<GroupsTab />} />
           <Route path="tong-quan" element={<OverviewTab />} />
+          <Route path="cai-dat" element={<SettingsTab />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </main>

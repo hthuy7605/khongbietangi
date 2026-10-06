@@ -6,6 +6,7 @@ import { notFound } from '../errors';
 import { dishInput, groupInput, placeInput } from '../schemas';
 import { listDishes, listGroups, listPlaces, stats, upsertDish, upsertPlace } from '../services/catalog';
 import { approveSuggestion, listSuggestions, rejectSuggestion } from '../services/suggestions';
+import { getSetting, setSetting } from '../services/settings';
 
 export const adminRouter = Router();
 adminRouter.use(requireAdmin);
@@ -82,4 +83,17 @@ adminRouter.post('/suggestions/:id/reject', async (req, res) => {
   const { reason } = z.object({ reason: z.string().trim().max(300).nullish() }).parse(req.body ?? {});
   await rejectSuggestion(idOf(req.params.id), reason || null);
   res.json({ ok: true });
+});
+
+adminRouter.get('/settings', async (_req, res) => {
+  const dishWeightEnabled = await getSetting('dish_weight_enabled');
+  const placeWeightEnabled = await getSetting('place_weight_enabled');
+  res.json({ dishWeightEnabled, placeWeightEnabled });
+});
+
+adminRouter.post('/settings/toggle', async (req, res) => {
+  const { key } = z.object({ key: z.enum(['dish_weight_enabled', 'place_weight_enabled']) }).parse(req.body);
+  const current = await getSetting(key);
+  await setSetting(key, !current);
+  res.json({ ok: true, [key]: !current });
 });

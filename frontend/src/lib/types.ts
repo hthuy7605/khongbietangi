@@ -42,6 +42,8 @@ export interface Catalog {
   groups: Group[];
   dishes: Dish[];
   places: Place[];
+  dishWeightEnabled: boolean;
+  placeWeightEnabled: boolean;
 }
 
 export type SuggestionKind = 'dish' | 'place' | 'link';
