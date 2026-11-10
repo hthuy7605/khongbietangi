@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import { FilterBar } from '@/components/FilterBar';
 import { PlaceCard } from '@/components/PlaceCard';
 import { RejectedPanel } from '@/components/RejectedPanel';
@@ -22,6 +23,16 @@ async function celebrate() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const { default: confetti } = await import('canvas-confetti');
   void confetti({ particleCount: 90, spread: 70, origin: { y: 0.55 }, colors: ['#ea580c', '#f59e0b', '#dc2626', '#fde68a'] });
+}
+
+const SKIP_KEY = 'skipRollAnimation';
+
+function loadSkip() {
+  try {
+    return localStorage.getItem(SKIP_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 function EmptyState({ emoji, title, children }: { emoji: string; title: string; children?: React.ReactNode }) {
@@ -44,6 +55,7 @@ export default function HomePage() {
   const [dish, setDish] = useState<Dish | null>(null);
   const [pickedPlace, setPickedPlace] = useState<PlaceView | null>(null);
   const [announce, setAnnounce] = useState('');
+  const [skipAnim, setSkipAnim] = useState(loadSkip);
   const spinId = useRef(0);
 
   const dishes = useMemo(() => new Map((catalog?.dishes ?? []).map((d) => [d.id, d])), [catalog]);
@@ -68,13 +80,13 @@ export default function HomePage() {
       const id = ++spinId.current;
       setPickedPlace(null);
       setDish(null);
-      await slot.run(pool, target);
+      if (!skipAnim) await slot.run(pool, target);
       if (id !== spinId.current) return;
       setDish(target);
       setAnnounce(`Hôm nay ăn ${target.name}`);
-      void celebrate();
+      if (!skipAnim) void celebrate();
     },
-    [slot, catalog?.dishWeightEnabled],
+    [slot, catalog?.dishWeightEnabled, skipAnim],
   );
 
   const onChangeFilters = (f: Filters) => {
@@ -90,6 +102,15 @@ export default function HomePage() {
     const c = await nearby.request();
     if (c) onChangeFilters({ ...filters, nearby: true });
     else toast.error('Không lấy được vị trí. Hãy cho phép truy cập vị trí trong trình duyệt nhé.');
+  }
+
+  function onSkipChange(on: boolean) {
+    setSkipAnim(on);
+    try {
+      localStorage.setItem(SKIP_KEY, on ? '1' : '0');
+    } catch {
+      // trình duyệt chặn lưu: vẫn áp dụng trong phiên hiện tại
+    }
   }
 
   function rejectDish() {
@@ -228,6 +249,10 @@ export default function HomePage() {
             )}
           </div>
         )}
+        <label className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Switch size="sm" checked={skipAnim} onCheckedChange={onSkipChange} />
+          Bỏ qua hiệu ứng, ra kết quả luôn
+        </label>
       </section>
 
       {dish && !spinning && (
