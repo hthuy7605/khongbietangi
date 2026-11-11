@@ -28,3 +28,9 @@ plans
 *.env*
 # Playwright MCP
 .playwright-mcp/
+
+# Local AI agent tooling
+.agents/
+.claude/
+skills-lock.json
+_tmp_*
